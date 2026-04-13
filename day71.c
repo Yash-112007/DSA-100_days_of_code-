@@ -1,65 +1,75 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
-#define INF 1000000000
+#define EMPTY -1
+#define MAX 1000
 
-// Edge structure
-struct Edge {
-    int u, v, w;
-};
+int table[MAX];
+int m;
+
+// Hash function
+int hash(int key) {
+    return key % m;
+}
+
+// INSERT operation
+void insert(int key) {
+    int h = hash(key);
+    int i = 0;
+    
+    while(i < m) {
+        int idx = (h + i*i) % m;
+        
+        if(table[idx] == EMPTY) {
+            table[idx] = key;
+            return;
+        }
+        i++;
+    }
+}
+
+// SEARCH operation
+int search(int key) {
+    int h = hash(key);
+    int i = 0;
+
+    while(i < m) {
+        int idx = (h + i*i) % m;
+
+        if(table[idx] == EMPTY)
+            return 0;  // not found
+        
+        if(table[idx] == key)
+            return 1;  // found
+        
+        i++;
+    }
+    return 0;
+}
 
 int main() {
-    int n, m, source;
-    scanf("%d %d", &n, &m);
+    int q;
+    scanf("%d", &m);
+    scanf("%d", &q);
 
-    struct Edge edges[m];
-
-    // Input edges
+    // initialize table
     for(int i = 0; i < m; i++)
-        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+        table[i] = EMPTY;
 
-    scanf("%d", &source);
+    char op[10];
+    int x;
 
-    int dist[n];
+    while(q--) {
+        scanf("%s %d", op, &x);
 
-    // Step 1: Initialize distances
-    for(int i = 0; i < n; i++)
-        dist[i] = INF;
-
-    dist[source] = 0;
-
-    // Step 2: Relax edges (n-1 times)
-    for(int i = 1; i <= n-1; i++) {
-        for(int j = 0; j < m; j++) {
-            int u = edges[j].u;
-            int v = edges[j].v;
-            int w = edges[j].w;
-
-            if(dist[u] != INF && dist[u] + w < dist[v])
-                dist[v] = dist[u] + w;
+        if(strcmp(op, "INSERT") == 0)
+            insert(x);
+        else if(strcmp(op, "SEARCH") == 0) {
+            if(search(x))
+                printf("FOUND\n");
+            else
+                printf("NOT FOUND\n");
         }
     }
-
-    // Step 3: Check negative cycle
-    for(int j = 0; j < m; j++) {
-        int u = edges[j].u;
-        int v = edges[j].v;
-        int w = edges[j].w;
-
-        if(dist[u] != INF && dist[u] + w < dist[v]) {
-            printf("NEGATIVE CYCLE\n");
-            return 0;
-        }
-    }
-
-    // Step 4: Print shortest distances
-    printf("Shortest distances from source:\n");
-    for(int i = 0; i < n; i++) {
-        if(dist[i] == INF)
-            printf("%d -> INF\n", i);
-        else
-            printf("%d -> %d\n", i, dist[i]);
-    }
-
     return 0;
 }
